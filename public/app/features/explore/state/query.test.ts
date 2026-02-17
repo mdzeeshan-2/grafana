@@ -206,11 +206,13 @@ describe('runQueries', () => {
   });
 
   it('shows results only after correlations are loaded', async () => {
+    jest.useFakeTimers();
     const { dispatch, getState } = setupTests();
     setupQueryResponse(getState());
     await dispatch(runQueries({ exploreId: 'left' }));
     expect(getState().explore.panes.left!.graphResult).not.toBeDefined();
     await dispatch(saveCorrelationsAction({ exploreId: 'left', correlations: [] }));
+    await jest.runAllTimersAsync();
     expect(getState().explore.panes.left!.graphResult).toBeDefined();
   });
 
