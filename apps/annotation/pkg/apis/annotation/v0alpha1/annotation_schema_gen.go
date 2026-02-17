@@ -67,6 +67,66 @@ var (
 					return fmt.Sprintf("%d", *cast.Spec.PanelID), nil
 				},
 			},
+			{
+				FieldSelector: "spec.tags",
+				FieldValueFunc: func(o resource.Object) (string, error) {
+					cast, ok := o.(*Annotation)
+					if !ok {
+						return "", errors.New("provided object must be of type *Annotation")
+					}
+					// MANUAL EDIT: Generator incorrectly uses `if cast.Spec.Tags == nil` for slices
+					if len(cast.Spec.Tags) == 0 {
+						return "", nil
+					}
+
+					// MANUAL EDIT: Generator incorrectly uses `*cast.Spec.Tags` for slices
+					return cast.Spec.Tags[0], nil
+				},
+			},
+			{
+				FieldSelector: "spec.tagsMatchAny",
+				FieldValueFunc: func(o resource.Object) (string, error) {
+					cast, ok := o.(*Annotation)
+					if !ok {
+						return "", errors.New("provided object must be of type *Annotation")
+					}
+					if cast.Spec.TagsMatchAny == nil {
+						return "", nil
+					}
+
+					return fmt.Sprintf("%v", *cast.Spec.TagsMatchAny), nil
+				},
+			},
+			{
+				FieldSelector: "spec.scopes",
+				FieldValueFunc: func(o resource.Object) (string, error) {
+					cast, ok := o.(*Annotation)
+					if !ok {
+						return "", errors.New("provided object must be of type *Annotation")
+					}
+					// MANUAL EDIT: Generator incorrectly uses `if cast.Spec.Scopes == nil` for slices
+					if len(cast.Spec.Scopes) == 0 {
+						return "", nil
+					}
+
+					// MANUAL EDIT: Generator incorrectly uses `*cast.Spec.Scopes` for slices
+					return cast.Spec.Scopes[0], nil
+				},
+			},
+			{
+				FieldSelector: "spec.scopesMatchAny",
+				FieldValueFunc: func(o resource.Object) (string, error) {
+					cast, ok := o.(*Annotation)
+					if !ok {
+						return "", errors.New("provided object must be of type *Annotation")
+					}
+					if cast.Spec.ScopesMatchAny == nil {
+						return "", nil
+					}
+
+					return fmt.Sprintf("%v", *cast.Spec.ScopesMatchAny), nil
+				},
+			},
 		}))
 	kindAnnotation = resource.Kind{
 		Schema: schemaAnnotation,

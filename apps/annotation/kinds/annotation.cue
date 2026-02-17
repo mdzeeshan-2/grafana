@@ -11,7 +11,9 @@ annotationv0alpha1: {
       dashboardUID?: string
       panelID?: int64
       tags?: [...string]
+      tagsMatchAny?: bool
       scopes?: [...string]
+      scopesMatchAny?: bool
 		}
 	}
   selectableFields: [
@@ -19,6 +21,10 @@ annotationv0alpha1: {
     "spec.timeEnd",
     "spec.dashboardUID",
     "spec.panelID",
+    "spec.tags",
+    "spec.tagsMatchAny",
+    "spec.scopes",
+    "spec.scopesMatchAny",
   ]
 }
 

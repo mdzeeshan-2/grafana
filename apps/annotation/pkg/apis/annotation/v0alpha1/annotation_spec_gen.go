@@ -4,13 +4,15 @@ package v0alpha1
 
 // +k8s:openapi-gen=true
 type AnnotationSpec struct {
-	Text         string   `json:"text"`
-	Time         int64    `json:"time"`
-	TimeEnd      *int64   `json:"timeEnd,omitempty"`
-	DashboardUID *string  `json:"dashboardUID,omitempty"`
-	PanelID      *int64   `json:"panelID,omitempty"`
-	Tags         []string `json:"tags,omitempty"`
-	Scopes       []string `json:"scopes,omitempty"`
+	Text           string   `json:"text"`
+	Time           int64    `json:"time"`
+	TimeEnd        *int64   `json:"timeEnd,omitempty"`
+	DashboardUID   *string  `json:"dashboardUID,omitempty"`
+	PanelID        *int64   `json:"panelID,omitempty"`
+	Tags           []string `json:"tags,omitempty"`
+	TagsMatchAny   *bool    `json:"tagsMatchAny,omitempty"`
+	Scopes         []string `json:"scopes,omitempty"`
+	ScopesMatchAny *bool    `json:"scopesMatchAny,omitempty"`
 }
 
 // NewAnnotationSpec creates a new AnnotationSpec object.

@@ -7,7 +7,9 @@ export interface Spec {
 	dashboardUID?: string;
 	panelID?: number;
 	tags?: string[];
+	tagsMatchAny?: boolean;
 	scopes?: string[];
+	scopesMatchAny?: boolean;
 }
 
 export const defaultSpec = (): Spec => ({
