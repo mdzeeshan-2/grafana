@@ -208,6 +208,11 @@ func doBuild(binaryName, pkg string, opts BuildOpts) error {
 		args = append(args, "-race")
 	}
 
+	toolexecUtil := os.Getenv("GO_TRACE_TOOLEXEC_PATH")
+	if toolexecUtil != "" {
+		args = append(args, fmt.Sprintf("-toolexec=%s", toolexecUtil))
+	}
+
 	// We should not publish Grafana as a Go module, disabling vcs changes the version to (devel)
 	// and works better with SBOM and Vulnerability Scanners.
 	args = append(args, "-buildvcs=false")
