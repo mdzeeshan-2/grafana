@@ -9,6 +9,8 @@ import { locationSearchToObject, locationService, useScopes } from '@grafana/run
 import { ErrorBoundaryAlert, floatingUtils, getDragStyles, LinkButton, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useMediaQueryMinWidth } from 'app/core/hooks/useMediaQueryMinWidth';
+import { useAssistantContext } from 'app/features/assistant/AssistantContext';
+import { AssistantPanel, ASSISTANT_SIDEBAR_WIDTH } from 'app/features/assistant/AssistantPanel';
 import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
 import { ScopesDashboards } from 'app/features/scopes/dashboards/ScopesDashboards';
 
@@ -35,6 +37,7 @@ export function AppChrome({ children }: Props) {
     extensionSidebarWidth,
     setExtensionSidebarWidth,
   } = useExtensionSidebarContext();
+  const { isOpen: isAssistantOpen } = useAssistantContext();
   const state = chrome.useState();
   const scopes = useScopes();
 
@@ -51,10 +54,11 @@ export function AppChrome({ children }: Props) {
   useResponsiveDockedMegaMenu(chrome);
   useMegaMenuFocusHelper(state.megaMenuOpen, state.megaMenuDocked);
 
+  const anySidebarOpen = isExtensionSidebarOpen || isAssistantOpen;
   const contentClass = cx({
     [styles.content]: true,
     [styles.contentChromeless]: state.chromeless,
-    [styles.contentWithSidebar]: isExtensionSidebarOpen && !state.chromeless,
+    [styles.contentWithSidebar]: anySidebarOpen && !state.chromeless,
   });
 
   const handleMegaMenu = () => {
@@ -113,7 +117,7 @@ export function AppChrome({ children }: Props) {
         </>
       )}
       <div className={contentClass}>
-        <div className={cx(styles.panes, { [styles.panesWithSidebar]: isExtensionSidebarOpen })}>
+        <div className={cx(styles.panes, { [styles.panesWithSidebar]: anySidebarOpen })}>
           {!state.chromeless && (
             <div
               className={cx(styles.scopesDashboardsContainer, {
@@ -129,8 +133,9 @@ export function AppChrome({ children }: Props) {
             className={cx(styles.pageContainer, {
               [styles.pageContainerMenuDocked]: menuDockedAndOpen || isScopesDashboardsOpen,
               [styles.pageContainerMenuDockedScopes]: menuDockedAndOpen && isScopesDashboardsOpen,
-              [styles.pageContainerWithSidebar]: !state.chromeless && isExtensionSidebarOpen,
+              [styles.pageContainerWithSidebar]: !state.chromeless && anySidebarOpen,
               [contentSizeStyles.contentWidth]: !state.chromeless && isExtensionSidebarOpen,
+              [styles.pageContainerWithAssistant]: !state.chromeless && isAssistantOpen,
             })}
             id="pageContent"
           >
@@ -148,6 +153,11 @@ export function AppChrome({ children }: Props) {
             >
               <ExtensionSidebar />
             </Resizable>
+          )}
+          {!state.chromeless && isAssistantOpen && (
+            <div className={styles.assistantContainer}>
+              <AssistantPanel />
+            </div>
           )}
         </div>
       </div>
@@ -264,6 +274,9 @@ const getStyles = (theme: GrafanaTheme2, headerLevels: number, headerHeight: num
       height: '100%',
       minHeight: 0,
     }),
+    pageContainerWithAssistant: css({
+      marginRight: ASSISTANT_SIDEBAR_WIDTH,
+    }),
     skipLink: css({
       position: 'fixed',
       top: -1000,
@@ -282,6 +295,14 @@ const getStyles = (theme: GrafanaTheme2, headerLevels: number, headerHeight: num
       bottom: 0,
       zIndex: theme.zIndex.navbarFixed + 1,
       right: 0,
+    }),
+    assistantContainer: css({
+      position: 'fixed',
+      top: headerHeight,
+      bottom: 0,
+      right: 0,
+      zIndex: theme.zIndex.navbarFixed + 1,
+      width: ASSISTANT_SIDEBAR_WIDTH,
     }),
   };
 };

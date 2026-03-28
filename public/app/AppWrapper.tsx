@@ -17,6 +17,7 @@ import { GrafanaContext, GrafanaContextType } from './core/context/GrafanaContex
 import { GrafanaRouteWrapper } from './core/navigation/GrafanaRoute';
 import { RouteDescriptor } from './core/navigation/types';
 import { ThemeProvider } from './core/utils/ConfigProvider';
+import { AssistantContextProvider } from './features/assistant/AssistantContext';
 import { LiveConnectionWarning } from './features/live/LiveConnectionWarning';
 import { ExtensionRegistriesProvider } from './features/plugins/extensions/ExtensionRegistriesContext';
 import { getPluginExtensionRegistries } from './features/plugins/extensions/registry/setup';
@@ -133,14 +134,16 @@ export class AppWrapper extends Component<AppWrapperProps, AppWrapperState> {
                       <ScopesContextProvider>
                         <ExtensionRegistriesProvider registries={registries}>
                           <ExtensionSidebarContextProvider>
-                            <UNSAFE_PortalProvider getContainer={getPortalContainer}>
-                              <GlobalStyles />
-                              <div className="grafana-app">
-                                <RouterWrapper {...routerWrapperProps} />
-                                <LiveConnectionWarning />
-                                <PortalContainer />
-                              </div>
-                            </UNSAFE_PortalProvider>
+                            <AssistantContextProvider>
+                              <UNSAFE_PortalProvider getContainer={getPortalContainer}>
+                                <GlobalStyles />
+                                <div className="grafana-app">
+                                  <RouterWrapper {...routerWrapperProps} />
+                                  <LiveConnectionWarning />
+                                  <PortalContainer />
+                                </div>
+                              </UNSAFE_PortalProvider>
+                            </AssistantContextProvider>
                           </ExtensionSidebarContextProvider>
                         </ExtensionRegistriesProvider>
                       </ScopesContextProvider>
