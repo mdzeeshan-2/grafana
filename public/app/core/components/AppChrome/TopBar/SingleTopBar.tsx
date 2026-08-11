@@ -11,8 +11,6 @@ import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useMediaQueryMinWidth } from 'app/core/hooks/useMediaQueryMinWidth';
 import { HOME_NAV_ID } from 'app/core/reducers/navModel';
 import { contextSrv } from 'app/core/services/context_srv';
-import { AssistantButton } from 'app/features/assistant/AssistantButton';
-import { AssistantDifyButton } from 'app/features/assistant-dify/AssistantDifyButton';
 import { AssistantDifyIframeButton } from 'app/features/assistant-dify-iframe/AssistantDifyIframeButton';
 import { ScopesSelector } from 'app/features/scopes/selector/ScopesSelector';
 import { useSelector } from 'app/types/store';
@@ -97,8 +95,6 @@ export const SingleTopBar = memo(function SingleTopBar({
           <TopBarExtensionPoint />
           <TopSearchBarCommandPaletteTrigger />
           {!isSmallScreen && <QuickAdd />}
-          <AssistantButton />
-          <AssistantDifyButton />
           <AssistantDifyIframeButton />
           <HelpTopBarButton isSmallScreen={isSmallScreen} />
           <NavToolbarSeparator />

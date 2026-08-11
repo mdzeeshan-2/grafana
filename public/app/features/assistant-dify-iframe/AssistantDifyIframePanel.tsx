@@ -1,12 +1,12 @@
 import { css } from '@emotion/css';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
-import { Icon, IconButton, Spinner, useStyles2, useTheme2 } from '@grafana/ui';
+import { Icon, IconButton, useStyles2, useTheme2 } from '@grafana/ui';
 
 import { useAssistantDifyIframeContext } from './AssistantDifyIframeContext';
-import { fetchDifyEmbedConfig, withEmbedTheme } from './difyIframeClient';
+import { getDifyEmbedUrl, withEmbedTheme } from './difyIframeClient';
 
 export const ASSISTANT_DIFY_IFRAME_SIDEBAR_WIDTH = 380;
 
@@ -14,59 +14,8 @@ export function AssistantDifyIframePanel() {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const { isOpen, closeAssistant, iframeReloadKey, reloadIframe } = useAssistantDifyIframeContext();
-  const [embedUrl, setEmbedUrl] = useState('');
-  const [hasEmbedToken, setHasEmbedToken] = useState(false);
-  const [loadError, setLoadError] = useState('');
-  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    let cancelled = false;
-    setIsLoadingConfig(true);
-    setLoadError('');
-
-    fetchDifyEmbedConfig()
-      .then((config) => {
-        if (cancelled) {
-          return;
-        }
-        setHasEmbedToken(config.hasEmbedToken);
-        setEmbedUrl(config.embedUrl || '');
-        if (!config.hasEmbedToken || !config.embedUrl) {
-          setLoadError(
-            t(
-              'assistant-dify-iframe.errors.missing-token',
-              'DIFY_EMBED_TOKEN is not set. In Dify: Publish → Embed → copy the token into `.dify.env`, then restart the proxy.'
-            )
-          );
-        }
-      })
-      .catch((err) => {
-        if (cancelled) {
-          return;
-        }
-        setLoadError(
-          t(
-            'assistant-dify-iframe.errors.unreachable',
-            'Could not load Dify embed config.\n\n{{error}}\n\nMake sure the proxy is running (`node scripts/assistant-dify-proxy.mjs`).',
-            { error: err instanceof Error ? err.message : String(err) }
-          )
-        );
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsLoadingConfig(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, iframeReloadKey]);
-
+  const embedUrl = getDifyEmbedUrl();
   const themedEmbedUrl = useMemo(() => {
     if (!embedUrl) {
       return '';
@@ -82,19 +31,13 @@ export function AssistantDifyIframePanel() {
     <div
       className={styles.panel}
       role="complementary"
-      aria-label={t('assistant-dify-iframe.panel.aria-label', 'Grafana Assistant (Dify iframe)')}
+      aria-label={t('assistant-dify-iframe.panel.aria-label', 'Grafana Assistant')}
     >
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <Icon name="ai-sparkle" size="lg" className={styles.headerIcon} />
           <span className={styles.headerTitle}>
             <Trans i18nKey="assistant-dify-iframe.header.title">Grafana Assistant</Trans>
-          </span>
-          <span className={styles.badge}>
-            <Trans i18nKey="assistant-dify-iframe.header.badge">Dify</Trans>
-          </span>
-          <span className={styles.badgeSecondary}>
-            <Trans i18nKey="assistant-dify-iframe.header.badge-embed">Embed</Trans>
           </span>
         </div>
         <div className={styles.headerActions}>
@@ -104,7 +47,7 @@ export function AssistantDifyIframePanel() {
             tooltip={t('assistant-dify-iframe.actions.reload', 'New conversation')}
             onClick={reloadIframe}
             aria-label={t('assistant-dify-iframe.actions.reload', 'New conversation')}
-            disabled={!hasEmbedToken}
+            disabled={!embedUrl}
           />
           <IconButton
             name="times"
@@ -117,23 +60,18 @@ export function AssistantDifyIframePanel() {
       </div>
 
       <div className={styles.iframeShell}>
-        {isLoadingConfig && (
-          <div className={styles.centered}>
-            <Spinner size="lg" />
-          </div>
-        )}
-
-        {!isLoadingConfig && loadError && (
+        {!embedUrl && (
           <div className={styles.errorBox}>
-            {loadError.split('\n').map((line, i) => (
-              <p key={i} className={styles.errorLine}>
-                {line}
-              </p>
-            ))}
+            <p className={styles.errorLine}>
+              <Trans i18nKey="assistant-dify-iframe.errors.missing-url">
+                No Dify embed URL configured. Set DIFY_EMBED_URL in{' '}
+                <code>public/app/features/assistant-dify-iframe/difyEmbedConfig.ts</code> and rebuild.
+              </Trans>
+            </p>
           </div>
         )}
 
-        {!isLoadingConfig && !loadError && themedEmbedUrl && (
+        {embedUrl && (
           <iframe
             key={`${iframeReloadKey}-${theme.isDark ? 'dark' : 'light'}`}
             className={styles.iframe}
@@ -184,29 +122,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.primary,
     whiteSpace: 'nowrap',
   }),
-  badge: css({
-    fontSize: 10,
-    fontWeight: theme.typography.fontWeightMedium,
-    color: theme.colors.primary.contrastText,
-    backgroundColor: theme.colors.primary.main,
-    borderRadius: theme.shape.radius.pill,
-    padding: theme.spacing(0.25, 0.75),
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    flexShrink: 0,
-  }),
-  badgeSecondary: css({
-    fontSize: 10,
-    fontWeight: theme.typography.fontWeightMedium,
-    color: theme.colors.text.secondary,
-    backgroundColor: theme.colors.background.secondary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.pill,
-    padding: theme.spacing(0.25, 0.75),
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    flexShrink: 0,
-  }),
   headerActions: css({
     display: 'flex',
     alignItems: 'center',
@@ -226,13 +141,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: '100%',
     border: 'none',
     backgroundColor: theme.colors.background.primary,
-  }),
-  centered: css({
-    position: 'absolute',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   }),
   errorBox: css({
     padding: theme.spacing(2),

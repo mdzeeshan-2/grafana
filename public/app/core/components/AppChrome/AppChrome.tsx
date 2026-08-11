@@ -9,10 +9,6 @@ import { locationSearchToObject, locationService, useScopes } from '@grafana/run
 import { ErrorBoundaryAlert, floatingUtils, getDragStyles, LinkButton, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useMediaQueryMinWidth } from 'app/core/hooks/useMediaQueryMinWidth';
-import { useAssistantContext } from 'app/features/assistant/AssistantContext';
-import { AssistantPanel, ASSISTANT_SIDEBAR_WIDTH } from 'app/features/assistant/AssistantPanel';
-import { useAssistantDifyContext } from 'app/features/assistant-dify/AssistantDifyContext';
-import { AssistantDifyPanel, ASSISTANT_DIFY_SIDEBAR_WIDTH } from 'app/features/assistant-dify/AssistantDifyPanel';
 import { useAssistantDifyIframeContext } from 'app/features/assistant-dify-iframe/AssistantDifyIframeContext';
 import {
   AssistantDifyIframePanel,
@@ -44,9 +40,7 @@ export function AppChrome({ children }: Props) {
     extensionSidebarWidth,
     setExtensionSidebarWidth,
   } = useExtensionSidebarContext();
-  const { isOpen: isAssistantOpen } = useAssistantContext();
-  const { isOpen: isDifyAssistantOpen } = useAssistantDifyContext();
-  const { isOpen: isDifyIframeAssistantOpen } = useAssistantDifyIframeContext();
+  const { isOpen: isAssistantOpen } = useAssistantDifyIframeContext();
   const state = chrome.useState();
   const scopes = useScopes();
 
@@ -54,12 +48,7 @@ export function AppChrome({ children }: Props) {
   const isScopesDashboardsOpen = Boolean(
     scopes?.state.enabled && scopes?.state.drawerOpened && !scopes?.state.readOnly
   );
-  const isAnyAssistantOpen = isAssistantOpen || isDifyAssistantOpen || isDifyIframeAssistantOpen;
-  const assistantSidebarWidth = isDifyIframeAssistantOpen
-    ? ASSISTANT_DIFY_IFRAME_SIDEBAR_WIDTH
-    : isDifyAssistantOpen
-      ? ASSISTANT_DIFY_SIDEBAR_WIDTH
-      : ASSISTANT_SIDEBAR_WIDTH;
+  const assistantSidebarWidth = ASSISTANT_DIFY_IFRAME_SIDEBAR_WIDTH;
 
   const headerLevels = useChromeHeaderLevels();
   const styles = useStyles2(getStyles, headerLevels, getChromeHeaderLevelHeight(), assistantSidebarWidth);
@@ -69,7 +58,7 @@ export function AppChrome({ children }: Props) {
   useResponsiveDockedMegaMenu(chrome);
   useMegaMenuFocusHelper(state.megaMenuOpen, state.megaMenuDocked);
 
-  const anySidebarOpen = isExtensionSidebarOpen || isAnyAssistantOpen;
+  const anySidebarOpen = isExtensionSidebarOpen || isAssistantOpen;
   const contentClass = cx({
     [styles.content]: true,
     [styles.contentChromeless]: state.chromeless,
@@ -150,7 +139,7 @@ export function AppChrome({ children }: Props) {
               [styles.pageContainerMenuDockedScopes]: menuDockedAndOpen && isScopesDashboardsOpen,
               [styles.pageContainerWithSidebar]: !state.chromeless && anySidebarOpen,
               [contentSizeStyles.contentWidth]: !state.chromeless && isExtensionSidebarOpen,
-              [styles.pageContainerWithAssistant]: !state.chromeless && isAnyAssistantOpen,
+              [styles.pageContainerWithAssistant]: !state.chromeless && isAssistantOpen,
             })}
             id="pageContent"
           >
@@ -170,16 +159,6 @@ export function AppChrome({ children }: Props) {
             </Resizable>
           )}
           {!state.chromeless && isAssistantOpen && (
-            <div className={styles.assistantContainer}>
-              <AssistantPanel />
-            </div>
-          )}
-          {!state.chromeless && isDifyAssistantOpen && (
-            <div className={styles.assistantContainer}>
-              <AssistantDifyPanel />
-            </div>
-          )}
-          {!state.chromeless && isDifyIframeAssistantOpen && (
             <div className={styles.assistantContainer}>
               <AssistantDifyIframePanel />
             </div>
@@ -223,7 +202,7 @@ const getStyles = (
   theme: GrafanaTheme2,
   headerLevels: number,
   headerHeight: number,
-  assistantSidebarWidth = ASSISTANT_SIDEBAR_WIDTH
+  assistantSidebarWidth = ASSISTANT_DIFY_IFRAME_SIDEBAR_WIDTH
 ) => {
   return {
     content: css({

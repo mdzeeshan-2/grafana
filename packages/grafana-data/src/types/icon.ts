@@ -208,8 +208,6 @@ export const availableIconsIndex = {
   'map-marker-minus': true,
   'maximize-left': true,
   message: true,
-  microphone: true,
-  'microphone-slash': true,
   minus: true,
   'minus-circle': true,
   'mobile-android': true,
